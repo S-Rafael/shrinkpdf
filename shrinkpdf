@@ -51,7 +51,7 @@ die()
 check_dependency()
 {
 	local q=`which $1 2>/dev/null`
-	[[ "x${q:0:1}" == "x/" ]] || die "Utility program $1 not found"
+	[[ "x${q:0:1}" == "x/" ]] || die "Error: utility program $1 not found on the system."
 }
 ### warn_if_exists()
 # Checks whether the file ($1) exists (output overwrite protection).
