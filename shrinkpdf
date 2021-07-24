@@ -119,8 +119,9 @@ then
 	print_help
 	exit
 fi
-[[ -f "${INFILE}" ]] || die "Error: input file '${INFILE}' not found"
+[[ -f "${INFILE}" ]] || die "Error: input file '${INFILE}' not found."
 warn_if_exists "$OUTFILE"
+#
 # Run main processing command
 gs -o "$OUTFILE"                            \
     -sDEVICE=pdfwrite                       \
@@ -148,8 +149,9 @@ gs -o "$OUTFILE"                            \
     -f "$INFILE" 1>/dev/null 2>/dev/null
 if [[ $? -ne 0 ]]
 then
-	die "Ghostscript error; output file may be corrupted."
+	die "Ghostscript error; the output file may be corrupted."
 fi
+#
 # File has been processed correctly
 in_size=$(get_filesize "$INFILE")
 out_size=$(get_filesize "$OUTFILE")
@@ -160,8 +162,5 @@ then # size reduction achieved
 else
 	echo "Processing failed to reduce the size of the PDF file. You may just as well use the original file '${INFILE}'."
 fi
-
-# ===================================================================
-#
-# Done!
+####################################################################################################
 
