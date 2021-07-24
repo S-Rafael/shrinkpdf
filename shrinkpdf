@@ -1,0 +1,127 @@
+#!/bin/bash    
+#
+#   Author: Rafael M. Siejakowski <rs@rs-math.net>
+#   Homepage: http://rs-math.net
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#
+#====================================================================
+#
+#=============== FUNCTIONS ==========================================
+### die()
+# Print the message ($1) and exit with error
+die() 
+{
+    echo -e "$1"
+    exit -1
+}
+# -------------------------------------------------------------------
+#
+### check_dependency()
+# Checks whether the utility program ($1) is found in $PATH
+# and terminates the script if not
+check_dependency()
+{
+	local q=`which $1 2>/dev/null`
+	[[ "x${q:0:1}" == "x/" ]] || die "Utility program $1 not found"
+}
+#--------------------------------------------------------------------
+### warn_if_exists()
+# Checks whether the file ($1) exists (output overwrite protection).
+warn_if_exists()
+{ 
+    if [[ -f "$1" ]]
+    then
+        echo -n "File $1 exists. Overwrite? [y/N]: "
+        read answer
+        if [ "x${answer:0:1}" != "xy" ]
+        then
+            exit
+        fi
+    fi
+}
+# -------------------------------------------------------------------
+#
+### get_filesize()
+# Returns the size of a file in bytes or -1 if file doesn't exist.
+# Arguments:
+# $1 -	filename
+get_filesize()
+{
+	if [[ -f "$1" ]]
+	then
+		local duline=$(du -b "$1")
+		local duwords=( $duline )
+		echo "${duwords[0]}"
+	else
+		echo '-1'
+	fi
+}
+#============ Entry point ===========================================
+# Check if dependencies are present:
+check_dependency "gs"
+check_dependency "du"
+check_dependency "bc"
+# -------------------------------------------------------------------
+OUTFILE="$2"
+INFILE="$1"
+# Check if input and output file exist:
+if [[ "x${INFILE}" == "x" ]]
+then
+	die "Error: no input PDF file specified."
+fi
+[[ -f "${INFILE}" ]] || die "Error: file ${INFILE} not found"
+warn_if_exists "$OUTFILE"
+# Run main processing command
+gs -o "$OUTFILE"                            \
+    -sDEVICE=pdfwrite                       \
+    -dAntiAliasColorImage=false             \
+    -dAntiAliasGrayImage=false              \
+    -dAntiAliasMonoImage=false              \
+    -dAutoFilterColorImages=false           \
+    -dAutoFilterGrayImages=false            \
+    -dDownsampleColorImages=false           \
+    -dDownsampleGrayImages=false            \
+    -dDownsampleMonoImages=false            \
+    -dColorConversionStrategy=/LeaveColorUnchanged    \
+    -dConvertCMYKImagesToRGB=false          \
+    -dConvertImagesToIndexed=false          \
+    -dUCRandBGInfo=/Preserve                \
+    -dPreserveHalftoneInfo=true             \
+    -dPreserveOPIComments=true              \
+    -dPreserveOverprintSettings=true        \
+    -dEncodeColorImages=true                \
+    -dEncodeGrayImages=true                 \
+    -dEncodeMonoImages=true                 \
+    -dSubsetFonts=true                      \
+    -dCompressFonts=true                    \
+    -dDetectDuplicateImages=true            \
+    -f "$INFILE" 1>/dev/null 2>/dev/null
+if [[ $? -ne 0 ]]
+then
+	die "Ghostscript error; output file may be corrupted."
+fi
+# File has been processed correctly
+in_size=$(get_filesize "$INFILE")
+out_size=$(get_filesize "$OUTFILE")
+if [[ $in_size -gt $out_size ]]
+then # size reduction achieved
+	percentage=$(echo "scale=1; 100*($in_size - $out_size)/$in_size" | bc)
+	echo "Reduced file size by ${percentage}%, from ${in_size} to ${out_size} bytes."
+else
+	echo "Processing failed to reduce the size of the PDF file. You may just as well use the original file '${INFILE}'."
+fi
+
+# ===================================================================
+#
+# Done!
+
