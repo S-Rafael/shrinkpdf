@@ -80,7 +80,7 @@ print_help()
 	echo -e "efficient internal organization of the PDF. However, if the input PDF is already highly compressed"
 	echo -e "or efficiently structured, then shrinkpdf may not be able to further reduce its file size."
 	echo -e "In such case, shrinkpdf will print a suitable message to stdout. In any case, the input file is"
-	echo -e "not modified; onle the <OUTPUT> is written to."
+	echo -e "not modified; only the <OUTPUT> is written to."
 }
 ### get_filesize()
 # Returns the size of a file in bytes or -1 if file doesn't exist.
