@@ -71,7 +71,15 @@ warn_if_exists()
 # Prints help information
 print_help()
 {
-	
+	echo -e "\nshrinkpdf - a Bash script which attempts to reduce the size of a PDF file with GhostScript\n"
+	echo -e "Usage:\n\tshrinkpdf <INPUT> <OUTPUT>"
+	echo -e "where <INPUT> is an input PDF (or PostScript) file and <OUTPUT> is the desired output PDF."
+	echo -e "Given the above arguments, shrinkpdf will attempt to use GhostScript (gs) to reduce the size"
+	echo -e "of the input file without compromising its quality. This is accomplished via lossless compression"
+	echo -e "of images in the input file, de-duplicating fonts and images, and also by introducing a more"
+	echo -e "efficient internal organization of the PDF. However, if the input PDF is already highly compressed"
+	echo -e "or efficiently structured, then shrinkpdf may not be able to further reduce its file size."
+	echo -e "In such case, shrinkpdf will print a suitable message to stdout."
 }
 ### get_filesize()
 # Returns the size of a file in bytes or -1 if file doesn't exist.
@@ -104,9 +112,13 @@ OUTFILE="$2"
 INFILE="$1"
 if [[ "x${INFILE}" == "x" ]]
 then
-	die "Error: no input PDF file specified."
+	die "	Usage: $0 input.pdf output.pdf"
+elif [[ "$INFILE" == "--help" ]]
+then
+	print_help
+	exit
 fi
-[[ -f "${INFILE}" ]] || die "Error: file ${INFILE} not found"
+[[ -f "${INFILE}" ]] || die "Error: input file '${INFILE}' not found"
 warn_if_exists "$OUTFILE"
 # Run main processing command
 gs -o "$OUTFILE"                            \
